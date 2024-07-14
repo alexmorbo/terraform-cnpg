@@ -73,7 +73,7 @@ variable "password_special" {
 }
 
 variable "database_username" {
-  type    = string
+  type = string
 
   default = ""
 }
@@ -115,7 +115,15 @@ variable "object_storage_backup" {
     access_key      = string
     secret_key      = string
     bucket          = string
+    backup_suffix   = optional(string)
+    restore_suffix  = optional(string)
+    restore_name    = optional(string)
     schedule        = optional(string)
   })
 }
 
+variable "recovery_from_s3" {
+  type = bool
+
+  default = false
+}

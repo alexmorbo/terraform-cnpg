@@ -35,7 +35,7 @@ locals {
   database_username = var.database_username != "" ? var.database_username : random_string.database_username[0].result
 
   berman_object_store = var.object_storage_backup.enable ? {
-    destinationPath = "s3://${var.object_storage_backup.bucket}/${var.name}/"
+    destinationPath = "s3://${var.object_storage_backup.bucket}/${var.name}${var.object_storage_backup.backup_suffix}/"
     endpointURL     = var.object_storage_backup.s3_endpoint_url
     s3Credentials   = {
       accessKeyId = {
@@ -127,16 +127,32 @@ resource "kubernetes_manifest" "cnpg" {
 
       enableSuperuserAccess = var.enable_superuser_access
 
-      bootstrap = {
-        initdb = merge({
-          database = var.name
-          owner    = local.database_username
-          secret   = {
-            name = kubernetes_secret.cnpg_auth.metadata[0].name
+      bootstrap = merge(
+        var.recovery_from_s3 ? {
+          recovery = {
+            source = var.object_storage_backup.restore_name
           }
-          encoding = var.encoding
-        }, length(var.post_init_sql) > 0 ? { postInitSQL = var.post_init_sql } : {})
-      }
+        } : {},
+        var.recovery_from_s3 ? {} : {
+          initdb = merge({
+            database = var.name
+            owner    = local.database_username
+            secret   = {
+              name = kubernetes_secret.cnpg_auth.metadata[0].name
+            }
+            encoding = var.encoding
+          }, length(var.post_init_sql) > 0 ? { postInitSQL = var.post_init_sql } : {})
+        }
+      )
+
+      externalClusters = var.recovery_from_s3 ? [
+        {
+          name = var.object_storage_backup.restore_name
+          barmanObjectStore = merge(local.berman_object_store, {
+            destinationPath = "s3://${var.object_storage_backup.bucket}/${var.name}${var.object_storage_backup.restore_suffix}/"
+          })
+        }
+      ] : []
 
       storage = {
         size         = var.storage_size
@@ -145,7 +161,7 @@ resource "kubernetes_manifest" "cnpg" {
 
       backup = {
         barmanObjectStore = local.berman_object_store
-        retentionPolicy = var.backup_retention_policy
+        retentionPolicy   = var.backup_retention_policy
       }
     }
   }
