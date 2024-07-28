@@ -128,12 +128,12 @@ resource "kubernetes_manifest" "cnpg" {
       enableSuperuserAccess = var.enable_superuser_access
 
       bootstrap = merge(
-        var.recovery_from_s3 ? {
+        var.object_storage_restore.enable ? {
           recovery = {
-            source = var.object_storage_backup.restore_name
+            source = var.object_storage_restore.restore_name
           }
         } : {},
-        var.recovery_from_s3 ? {} : {
+        var.object_storage_restore.enable ? {} : {
           initdb = merge({
             database = var.name
             owner    = local.database_username
@@ -145,11 +145,11 @@ resource "kubernetes_manifest" "cnpg" {
         }
       )
 
-      externalClusters = var.recovery_from_s3 ? [
+      externalClusters = var.object_storage_restore.enable ? [
         {
-          name = var.object_storage_backup.restore_name
+          name = var.object_storage_restore.restore_name
           barmanObjectStore = merge(local.berman_object_store, {
-            destinationPath = "s3://${var.object_storage_backup.bucket}/${var.name}${var.object_storage_backup.restore_suffix}/"
+            destinationPath = "s3://${var.object_storage_backup.bucket}/${var.name}${var.object_storage_restore.restore_suffix}/"
           })
         }
       ] : []

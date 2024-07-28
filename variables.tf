@@ -111,19 +111,34 @@ variable "backup_retention_policy" {
 variable "object_storage_backup" {
   type = object({
     enable          = bool
-    s3_endpoint_url = string
-    access_key      = string
-    secret_key      = string
-    bucket          = string
+    s3_endpoint_url = optional(string)
+    access_key      = optional(string)
+    secret_key      = optional(string)
+    bucket          = optional(string)
     backup_suffix   = optional(string)
     restore_suffix  = optional(string)
     restore_name    = optional(string)
     schedule        = optional(string)
   })
+
+  default = {
+    enable = false
+  }
 }
 
-variable "recovery_from_s3" {
-  type = bool
+variable "object_storage_restore" {
+  type = object({
+    enable          = bool
+    s3_endpoint_url = optional(string)
+    access_key      = optional(string)
+    secret_key      = optional(string)
+    bucket          = optional(string)
+    backup_suffix   = optional(string)
+    restore_suffix  = optional(string)
+    restore_name    = optional(string)
+  })
 
-  default = false
+  default = {
+    enable = false
+  }
 }
