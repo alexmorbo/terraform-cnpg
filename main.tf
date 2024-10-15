@@ -35,7 +35,7 @@ locals {
   database_username = var.database_username != "" ? var.database_username : random_string.database_username[0].result
 
   berman_object_store = var.object_storage_backup.enable ? {
-    destinationPath = "s3://${var.object_storage_backup.bucket}/${var.name}${var.object_storage_backup.backup_suffix}/"
+    destinationPath = "s3://${var.object_storage_backup.bucket}/${var.name}${var.object_storage_backup.backup_suffix != null ? var.object_storage_backup.backup_suffix : ""}/"
     endpointURL     = var.object_storage_backup.s3_endpoint_url
     s3Credentials   = {
       accessKeyId = {
