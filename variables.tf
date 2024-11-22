@@ -2,6 +2,24 @@ variable "name" {
   type = string
 }
 
+variable "annotations" {
+  type = map(string)
+
+  default = {}
+}
+
+variable "postgres_version" {
+  type = string
+
+  default = "16"
+}
+
+variable "image_registry" {
+  type = string
+
+  default = "ghcr.io"
+}
+
 variable "suffix" {
   type = string
 
@@ -73,6 +91,12 @@ variable "password_special" {
 }
 
 variable "database_username" {
+  type = string
+
+  default = ""
+}
+
+variable "database_password" {
   type = string
 
   default = ""

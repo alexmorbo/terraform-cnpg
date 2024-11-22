@@ -3,7 +3,7 @@ output "database_username" {
 }
 
 output "database_password" {
-  value = random_password.database_password.result
+  value = local.database_password
 
   sensitive = true
 }
